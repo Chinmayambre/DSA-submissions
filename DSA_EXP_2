@@ -1,0 +1,179 @@
+//METHOD 1
+#include <stdio.h>
+#include <ctype.h>
+
+#define MAX 100
+
+// Structure of Stack
+struct Stack {
+    int top;
+    char items[MAX];
+};
+
+// Function to initialize the stack
+void initStack(struct Stack* stack) {
+    stack->top = -1;
+}
+
+// Function to check if the stack is empty
+int isEmpty(struct Stack* stack) {
+    return stack->top == -1;
+}
+
+// Function to add an item to stack
+void push(struct Stack* stack, char op) {
+    if (stack->top < MAX - 1) {
+        stack->items[++stack->top] = op;
+    } else {
+        printf("Stack overflow\n");
+    }
+}
+
+// Function to remove an item from stack
+char pop(struct Stack* stack) {
+    if (!isEmpty(stack))
+        return stack->items[stack->top--];
+    return '\0';
+}
+
+// Function to return the precedence of the operator
+int precedence(char op) {
+    switch (op) {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        case '^':
+            return 3;
+    }
+    return 0;
+}
+
+// Function to check if the character is an operand
+int isOperand(char ch) {
+    return isalnum(ch);
+}
+
+// Function to convert infix expression to postfix expression
+void infixToPostfix(char* infix, char* postfix) {
+    struct Stack stack;
+    initStack(&stack);
+    int i, k = 0;
+
+    // Loop through each character in the infix expression
+    for (i = 0; infix[i]; ++i) {
+        // If the character is an operand, add it to the postfix expression
+        if (isOperand(infix[i]))
+            postfix[k++] = infix[i];
+        // If the character is '(', push it to the stack
+        else if (infix[i] == '(')
+            push(&stack, infix[i]);
+        // If the character is ')', pop from the stack until '(' is found
+        else if (infix[i] == ')') {
+            while (!isEmpty(&stack) && stack.items[stack.top] != '(')
+                postfix[k++] = pop(&stack);
+            pop(&stack); // Remove '(' from stack
+        }
+        // If the character is an operator
+        else {
+            while (!isEmpty(&stack) && precedence(infix[i]) <= precedence(stack.items[stack.top]))
+                postfix[k++] = pop(&stack);
+            push(&stack, infix[i]);
+        }
+    }
+
+    // Pop all remaining operators from the stack
+    while (!isEmpty(&stack))
+        postfix[k++] = pop(&stack);
+
+    postfix[k] = '\0'; // Null-terminate the postfix expression
+}
+
+// Main function
+int main() {
+    char infix[MAX], postfix[MAX];
+
+    // Read infix expression from user
+    printf("Enter infix expression: ");
+    scanf("%s", infix);
+
+    // Convert to postfix
+    infixToPostfix(infix, postfix);
+
+    // Print postfix expression
+    printf("Postfix expression: %s\n", postfix);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+//METHOD 2
+//conversion of infix to prefix
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+char stack[20];
+int top= -1;
+
+void push(char x){
+    stack[++top]=x;
+}
+
+char pop(){
+    if(top == -1){
+        return -1;
+    }else{
+        return stack[top--];
+    }
+}
+
+int priority(char x){
+    if(x=='('){
+        return 0;
+    }
+    if(x=='+' || x=='-'){
+        return 1;
+    }
+    if(x=='*' || x=='/'){
+        return 2;
+    }
+}
+
+int main(){
+    char exp[20];
+    char *e,x;
+    printf("Enter the Expression : ");
+    scanf("%s",exp);
+    e=exp;
+    while (*e != '\0'){
+        if(isalnum(*e)){
+            printf("%c",*e);
+        }else if(*e=='('){
+            push(*e);
+        }else if(*e==')'){
+            while ((x=pop()) !='('){
+                printf("%c",x);
+            }
+        }else{
+            while(priority(stack[top])>=priority(*e)){
+                printf("%c",pop());
+            }
+            push(*e);
+        }
+        e++;
+    }
+    while (top!=-1){
+        printf("%c",pop());
+    }
+    
+}
+
